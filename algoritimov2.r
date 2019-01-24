@@ -25,9 +25,9 @@ func <- function(j,s,w){
   
   p = ( ( (u-1)**u)/gamma(u) )*exp(-(u-1)/w)/(w**(1+u))
   
-  dpdj = p*( -(log(w)/(s**2)) - (2*log(abs(s)))/(s**2) + (u/j) + (log(j)/(s**2)) - (digamma(u)) - (1/(w*(s**2))) )
+  dpdj = (p/(s**2))*( -log(w) - (2*log(abs(s))) + (u*(s**2)) + log(j) - (digamma(u)) - (1/(w)))
   
-  dpds = p*( (2*j*log(w)/(s**3)) + (4*j*log(abs(s))/(s**3)) - (2*u/(s)) + (2*j*digamma(u)/(s**3)) - (2*j*log(j)/(s**3))   ) 
+  dpds = (2*j*p/(s**3))*( (log(w)) + (2*log(abs(s))) - ((s**2)*u/j) + (digamma(u)) - (log(j)) + (1/j) ) 
   
   return(c(p,dpdj,dpds))
 }
