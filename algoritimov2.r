@@ -1,6 +1,8 @@
+#library("foreign", lib.loc="/usr/lib/R/library")
 
-dataset  = read.spss("/home/anthony/Documentos/algor_genetico/tot2014s.sav", to.data.frame = TRUE)
+dataset  = read.spss("/home/anthony/Documentos/algor_genetico/wealthdist/tot2014s.sav", to.data.frame = TRUE)
 
+### not ready #######
 clean_data = function(dados,beans){
   
   bean_size = round(length(dados)/beans)
@@ -14,11 +16,14 @@ clean_data = function(dados,beans){
   
   return(new_data)
 }
+###########################
 
 datab = log(dataset$V2)
 
 Y = hist(dataset$V2,100000,freq = TRUE)
 
+
+#### funcao de distribuicao e derivadas parciais em relacao aos parametros s e j ########
 func <- function(j,s,w){
   
   u = 1+(j/(s**2))
@@ -32,40 +37,36 @@ func <- function(j,s,w){
   return(c(p,dpdj,dpds))
 }
 
-fitting <- function(j,s){  # x = [j,s,w]
+###### cost fuction ###########
+fitting <- function(j,s){  # args -> s,j
   
   A = numeric(length(Y$density))
   B = numeric(length(Y$density))
   
+  # square error sum
+  
   for(i in 1:length(Y$density)){
     
-
     funcVal = func(j,s,Y$mids[i])
-
     
-    A[i] = -(Y$density[i] - funcVal[1])*funcVal[2]  # funcVal[1] = p(x), funcVal[2] =dp(x)/dj
-    B[i] = -(Y$density[i] - funcVal[1])*funcVal[3]  # funcVal[3] =dp(x)/ds
-    }
+    A[i] = -(Y$density[i] - funcVal[1])*funcVal[2]  # funcVal[1] := p(x), funcVal[2] := dp(x)/dj
+    B[i] = -(Y$density[i] - funcVal[1])*funcVal[3]  # funcVal[3] := dp(x)/ds
+    
+  }
+  
   return(sqrt((sum(A)**2) + (sum(B)**2)))
+  
 }
 
 index = function(j,s){
-  
-  
   return(1 + (j/(s**2)))
-  
 }
 
-
-
+## genetic algorith
 GA = ga(type = "real-valued", 
         fitness =  function(x) -fitting(x[1],x[2]),
         lower = c(1e-5,1e-5), upper = c(5,5), 
         popSize = 50, maxiter = 1000, run = 100)
-
-x1 <- x2 <- seq(0.001, 10, by = 0.1)
-f <- outer(x1, x2, fitting)
-persp3D(x1, x2, outer(x1,x2,f), theta = 50, phi = 20, color.palette = bl2gr.colors)
 
 new_Y = numeric(length(Y$density))
 for(i in 1:length(Y$density)){
